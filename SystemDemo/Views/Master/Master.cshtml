@@ -1,0 +1,270 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SystemDemo</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/layui/layui/css/layui.css" />
+    <style>
+        .layui-header {
+            background-color: #31bdec !important;
+            color: #000;
+        }
+
+            .layui-header ul > li a {
+                color: #000 !important;
+            }
+
+            .layui-header .layui-logo {
+                color: #000 !important;
+            }
+
+        .layui-nav-tree .layui-nav-child {
+            background-color: #d2d2d2;
+        }
+
+            .layui-nav-tree .layui-nav-child a {
+                color: #000;
+            }
+
+                .layui-nav-tree .layui-nav-child a:hover {
+                    color: #000;
+                }
+
+        .layui-nav-tree .layui-nav-item a {
+            position: relative;
+            height: 60px;
+            line-height: 60px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .layui-nav-tree .layui-nav-child dd.layui-this, .layui-nav-tree .layui-nav-child dd.layui-this a, .layui-nav-tree .layui-this, .layui-nav-tree .layui-this > a, .layui-nav-tree .layui-this > a:hover {
+            background-color: #d2d2d2;
+            color: #000;
+        }
+
+        .layui-nav-child {
+            padding: 0;
+        }
+
+
+        .content-header {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo">layui 后台布局</div>
+            <!-- 头部区域（可配合layui已有的水平导航） -->
+            <ul class="layui-nav layui-layout-left">
+                <li class="layui-nav-item">
+                    <a href="#">刷新</a>
+                </li>
+                <li class="layui-nav-item">
+                    <a href="#">退出</a>
+                </li>
+            </ul>
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="#" class="site-demo-active">控制台</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+                <ul class="layui-nav layui-nav-tree" lay-filter="test">
+                    <li class="layui-nav-item layui-nav-itemed">
+                        <a href="javascript:void(0);" class="toggle">项目管理</a>
+                        <dl class="layui-nav-child">
+                            <dd>
+                                <a href="javascript:void(0);" data-url="../System/Index" data-id="1" data-title="用户管理" data-type="tabAdd" class="site-demo-active">
+                                    用户管理
+                                </a>
+                            </dd>
+                            <dd>
+                                <a href="javascript:void(0);" data-url="../System/Login" data-id="2" data-title="项目管理" data-type="tabAdd" class="site-demo-active">
+                                    项目管理
+                                </a>
+                            </dd>
+                        </dl>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="layui-tab" lay-filter="navRecord" lay-allowclose="true" style="margin-left: 200px;margin-top:60px;">
+            <ul class="layui-tab-title">
+            </ul>
+            <ul class="rightmenu" style="display: none;position: absolute;">
+                <li data-type="closethis">关闭当前</li>
+                <li data-type="closeall">关闭所有</li>
+            </ul>
+            <div class="layui-tab-content" style="padding:15px;">
+                @* 加载的内容 *@
+            </div>
+        </div>
+
+        <div class="layui-body">
+            <div style="padding: 15px;">
+                <iframe data-frameid="1" scrolling="auto" frameborder="0" style="width:100%;height:99%;"></iframe>
+            </div>
+        </div>
+
+        <div class="layui-footer">
+            © 2024-林士云
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/layui/layui/layui.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    <script type="text/javascript">
+        layui.use(['element', "layer"], function () {
+            var $ = layui.jquery;
+            var element = layui.element;
+            var layer = layui.layer;
+
+            $("body").click(function () { $('.rightmenu').hide(); });
+
+            $(".toggle").click(function (e) {
+                var tag = $(this).next();
+                if (tag[0] != "undefined" && tag[0] != null) {
+                    var tagname = tag[0].tagName;
+                    if (tagname.toLowerCase() == "dl") {
+                        tag.toggle();
+                    }
+                }
+            });
+
+
+
+            var active = {
+                tabAdd: function (url, id, name) {
+                    element.tabAdd("navRecord", {
+                        title: name,
+                        content: '<iframe data-frameid="' + id + '" scrolling="auto" frameborder="0" src="' + url + '" style="width:100%;height:99%;"></iframe>',
+                        id: id
+                    })
+                    CustomRightClick(id);
+                    FrameWH();
+                },
+                tabChange: function (url, id, name) {
+
+                    $.ajax({
+                        url: "../Master/GetThreeNav",
+                        type: "POST",
+                        data: {
+                            id: id
+                        },
+                        success: function (res) {
+                            console.log(res)
+                            $(".content-header").remove();
+
+                            var rightMenu;
+                            for (var i = 0; i < res.data.length; i++) {
+                                rightMenu += `<i class="">` + name + `</i>`;
+                            }
+
+                            $(".layui-tab-content").prepend(`
+                                <div class="content-header row" style="height:48px;line-height:48px;">
+                                    <div class="col-3"><h3 class="">`+ name + `</h3></div>
+                                    <div class="col-9">
+                                        `+ rightMenu + `
+                                    </div>
+                                </div>`);
+
+                            element.tabChange("navRecord", id);
+                        },
+                        error: function (res) {
+
+                        }
+                    })
+
+                },
+                tabDelete: function (id) {
+                    element.tabDelete("navRecord", id);
+                },
+                tabDeleteAll: function (ids) {
+                    $.each(ids, function (i, item) {
+                        element.tabDelete("navRecord", item);
+                    })
+                }
+            };
+
+            $('.site-demo-active').on('click', function () {
+                var othis = $(this);
+
+                if ($(".layui-tab-title li[lay-id]").length <= 0) {
+                    active.tabAdd(othis.data("url"), othis.data("id"), othis.data("title"));
+                } else {
+                    var isData = false;
+                    $.each($(".layui-tab-title li[lay-id]"), function () {
+                        if ($(this).attr("lay-id") == othis.data("id")) {
+                            isData = true;
+                        }
+                    })
+                    if (isData == false) {
+                        active.tabAdd(othis.data("url"), othis.data("id"), othis.data("title"));
+                    }
+                }
+
+                active.tabChange(othis.data("url"), othis.data("id"), othis.data("title"));
+            });
+
+            function CustomRightClick(id) {
+                $('.layui-tab-title li').on('contextmenu', function () { return false; })
+                $('.layui-tab-title,.layui-tab-title li').click(function () {
+                    $('.rightmenu').hide();
+                });
+                $('.layui-tab-title li').on('contextmenu', function (e) {
+                    var popupmenu = $(".rightmenu");
+                    popupmenu.find("li").attr("data-id", id);
+
+                    l = ($(document).width() - e.clientX) < popupmenu.width() ? (e.clientX - popupmenu.width()) : e.clientX;
+                    t = ($(document).height() - e.clientY) < popupmenu.height() ? (e.clientY - popupmenu.height()) : e.clientY;
+                    popupmenu.css({ left: l, top: t }).show();
+                    return false;
+                });
+            }
+
+
+            $(".rightmenu li").click(function () {
+
+                //右键菜单中的选项被点击之后，判断type的类型，决定关闭所有还是关闭当前。
+                if ($(this).attr("data-type") == "closethis") {
+                    //如果关闭当前，即根据显示右键菜单时所绑定的id，执行tabDelete
+                    active.tabDelete($(this).attr("data-id"))
+                } else if ($(this).attr("data-type") == "closeall") {
+                    var tabtitle = $(".layui-tab-title li");
+                    var ids = new Array();
+                    $.each(tabtitle, function (i) {
+                        ids[i] = $(this).attr("lay-id");
+                    })
+                    //如果关闭所有 ，即将所有的lay-id放进数组，执行tabDeleteAll
+                    active.tabDeleteAll(ids);
+                }
+
+                $('.rightmenu').hide(); //最后再隐藏右键菜单
+            })
+            function FrameWH() {
+                var h = $(window).height() - 41 - 10 - 60 - 10 - 44 - 10;
+                $("iframe").css("height", h + "px");
+            }
+
+            $(window).resize(function () {
+                FrameWH();
+            })
+        });
+    </script>
+
+</body>
+</html>
